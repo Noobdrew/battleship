@@ -1,0 +1,42 @@
+body{
+    margin: 0;
+    background-color: #ffffff;
+}
+header{
+    margin: 0;
+    height: 50px;
+    background-color:#90E0EF ;
+}
+.header-title{
+    padding-top: 10px;
+    font-size: 30px;
+    text-align: center;
+
+}
+
+.game-container{
+    margin-top: 150px;
+
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+.player-controlls{
+
+}
+.player{
+    border: 1px solid black;
+    width: auto;
+    height: auto;
+    display: grid;
+    grid-template-columns: repeat(10,35px);
+    grid-template-rows: repeat(10,35px);
+    column-gap: 0;
+    margin-bottom: 20px;
+}
+.cells{
+    border-bottom: 1px solid black;
+    border-left: 1px solid black;
+    width: 35px;
+    height: 35px;
+}
