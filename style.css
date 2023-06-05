@@ -37,7 +37,7 @@ header {
     text-align: center;
     rotate: 180deg;
     top: 12px;
-    left: 84vw;
+    left: 82.5vw;
 }
 
 .game-container {
@@ -46,10 +46,52 @@ header {
     justify-content: space-around;
 }
 
+.player-container {
+    padding: 10px;
+    border-radius: 15px;
+    background-color: #2e9cc7;
+    box-shadow: 5px 5px 15px rgb(7, 12, 36);
+}
+
 .player-title {
     font-size: 30px;
     text-align: center;
     margin-bottom: 10px;
+}
+
+.player .miss {
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgb(60, 170, 224);
+}
+
+.miss::after {
+    content: "X";
+
+}
+
+.player .hit {
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgb(204, 102, 102);
+}
+
+.hit::after {
+    content: "X";
+}
+
+.cells {
+    border: 1px solid black;
+    transition: all 0.15s ease-in-out;
+    background-color: #d1edff;
+}
+
+.cells:hover {
+    background-color: #208ab4;
 }
 
 .button-container {
@@ -57,6 +99,7 @@ header {
     justify-content: center;
     align-items: center;
     gap: 50px;
+
 }
 
 .button-container button {
@@ -75,7 +118,7 @@ header {
 }
 
 .player {
-    border: 1px solid black;
+
     border-left: none;
     width: auto;
     height: auto;
@@ -108,7 +151,9 @@ header {
     width: 600px;
     height: 60px;
     font-size: 25px;
-    background-color: var(--off-white);
+    background-color: #39a4c5;
+    box-shadow: 5px 5px 15px rgb(7, 12, 36);
+
     border-radius: 20px;
 
 }
