@@ -157,3 +157,8 @@ header {
     border-radius: 20px;
 
 }
+
+.remaining-ships {
+    text-align: center;
+    font-size: 20px;
+}
