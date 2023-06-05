@@ -1,26 +1,3 @@
-//1.create ship objects that have health, lenght and status(alive or dead)
-Array.prototype.compare = function (array) {
-    // if the other array is a falsy value, return
-    if (!array)
-        return false;
-
-    // compare lengths - can save a lot of time
-
-    for (var i = 0; i < this.length; i++) {
-        // Check if we have nested arrays
-        if (this[i] instanceof Array && array[i] instanceof Array) {
-            // recurse into the nested arrays
-            if (!this[i].compare(array[i]))
-                return false;
-        }
-        else if (this[i] != array[i]) {
-            // Warning - two different object instances will never be equal: {x:20} != {x:20}
-            return false;
-        }
-    }
-    return true;
-}
-
 class Ship {
     constructor(lenght, helth, alive, coordinates) {
         this.lenght = lenght
@@ -98,6 +75,30 @@ function addEventListenerByClass(className, event, fn) {
 
 addEventListenerByClass('player-cells', 'click', doSomething);
 function doSomething(e) {
-    console.log(parseInt(e.srcElement.classList[0]))
-    console.log(e)
+    let gridNumber = parseInt(e.srcElement.classList[0])
+    console.log(gridNumber)
+
+    function convertTableToCoordinates(tableInteger, numColumns, findCoordinate) {
+        const values = Array.from({ length: tableInteger }, (_, i) => i + 1);
+        const coordinates = [];
+
+        for (let i = 0; i < values.length; i++) {
+            const value = values[i];
+            const x = (i % numColumns) + 1;
+            const y = Math.floor(i / numColumns) + 1;
+
+            coordinates.push({ x: x, y: y, value: value });
+
+            if (value === findCoordinate) {
+                return [x, y];
+            }
+        }
+        return null;
+    }
+
+    const table = 100;
+    const numColumns = 10;
+
+    const coordinates = convertTableToCoordinates(table, numColumns, gridNumber);
+    console.log(coordinates)
 } 
