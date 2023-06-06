@@ -25,9 +25,9 @@ class Ship {
     }
 }
 
-const ship1 = new Ship(3, 3, true, [[1, 1], [1, 2]])
-const ship2 = new Ship(2, 2, true, [[2, 2]])
-const ship3 = new Ship(1, 1, true, [[5, 4]])
+const ship1 = new Ship(3, 3, true, [[0, 0], [0, 0], [0, 0]])
+const ship2 = new Ship(2, 2, true, [[0, 0], [0, 0]])
+const ship3 = new Ship(1, 1, true, [[0, 0]])
 
 class Fleet {
     constructor(aliveShips) {
@@ -160,13 +160,51 @@ function placeShipAtCoord(e) {
     console.log(gridNumber)
     let coordinates = getCoordinates(gridNumber)
     console.log(coordinates)
-    currShip++
+    const ship = playerFleet.aliveShips[currShip]
+
+    let shipCoordinates = playerFleet.aliveShips[currShip].coordinates
+    shipCoordinates[0] = coordinates
+    for (let i = 1; i < shipCoordinates.length; i++) {
+        let nextCoord = coordinates[0] + i
+        shipCoordinates[i] = [nextCoord, coordinates[1]]
+        if (nextCoord > 10) {
+            console.log('Invalid Placement')
+            currShip = 0
+            return
+        }
+
+
+    }
+    placeShipPermanent(gridNumber, ship)
+    console.log(shipCoordinates)
     const playerCells = document.querySelectorAll('.player-cells')
     playerCells.forEach(element => {
         element.classList.remove('pending-placement')
     });
+    if (currShip == playerFleet.aliveShips.length - 1) {
+        console.log('Placement done')
+        stopPlacement()
+        attackEnabled()
+    }
+    if (currShip < playerFleet.aliveShips.length - 1) {
+        currShip++
+        console.log(currShip)
+    }
+
 }
 //visualize placement
+function placeShipPermanent(index, ship) {
+    const current = document.querySelector(`[data-cell='${index}']`);
+    current.classList.add('ship');
+    for (let i = 1; i < ship.length; i++) {
+        const nextIndex = index + i;
+        if (nextIndex % 10 === 1) {
+            break; // Break out of the loop if the next div reaches the specified indexes
+        }
+        const element = document.querySelector(`[data-cell='${nextIndex}']`);
+        element.classList.add('ship');
+    }
+}
 function placeHorizontal(index, ship) {
     for (let i = 1; i < ship.length; i++) {
         const nextIndex = index + i;
@@ -179,8 +217,12 @@ function placeHorizontal(index, ship) {
 }
 function removeHorizontal(index, ship) {
     for (let i = 1; i < ship.length; i++) {
-        const element = document.querySelector(`[data-cell='${index + i}']`)
-        element.classList.remove('pending-placement')
+        const nextIndex = index + i;
+        if (nextIndex % 10 === 1) {
+            break; // Break out of the loop if the next div reaches the specified indexes
+        }
+        const element = document.querySelector(`[data-cell='${nextIndex}']`);
+        element.classList.remove('pending-placement');
     }
 }
 function placeVertical(index, ship) {
@@ -195,8 +237,12 @@ function placeVertical(index, ship) {
 }
 function removeVertical(index, ship) {
     for (let i = 1; i < ship.length; i++) {
-        const element = document.querySelector(`[data-cell='${index + i * 10}']`)
-        element.classList.remove('pending-placement')
+        const nextIndex = index + i * 10;
+        if (nextIndex > 100) {
+            break; // Break out of the loop if the next index exceeds 100
+        }
+        const element = document.querySelector(`[data-cell='${nextIndex}']`);
+        element.classList.remove('pending-placement');
     }
 }
 function displayPlacement(e) {
@@ -223,12 +269,15 @@ function placeShipsOnBoard() {
     addEventListenerByClass('player-cells', 'mouseleave', removeDisplayPlacement)
     addEventListenerByClass('player-cells', 'click', placeShipAtCoord);
 }
-placeShipsOnBoard()
+function stopPlacement() {
+    removeEventListenerByClass('player-cells', 'mouseenter', displayPlacement)
+    removeEventListenerByClass('player-cells', 'mouseleave', removeDisplayPlacement)
+    removeEventListenerByClass('player-cells', 'click', placeShipAtCoord);
+}
 function attackEnabled() {
     addEventListenerByClass('player-cells', 'click', attackAtCoord);
 }
 function attackDisabled() {
     removeEventListenerByClass('player-cells', 'click', attackAtCoord)
 }
-
-
+placeShipsOnBoard()
