@@ -25,7 +25,7 @@ class Ship {
     }
 }
 
-const ship1 = new Ship(2, 2, true, [[3, 1], [1, 2]])
+const ship1 = new Ship(2, 2, true, [[1, 1], [1, 2]])
 const ship2 = new Ship(1, 1, true, [[2, 2]])
 const ship3 = new Ship(1, 1, true, [[5, 4]])
 
@@ -35,6 +35,7 @@ const fleet = [ship1, ship2, ship3]
 class Gameboard {
     constructor() {
         this.allShips = []
+        this.prevShot = false
     }
     placeShips() {
         fleet.forEach(ship => {
@@ -48,22 +49,29 @@ class Gameboard {
                 if (arr2[i] == arr1[0] &&
                     arr2[i + 1] == arr1[1]) {
                     console.log('hit')
-                    return true
+
+                    return this.prevShot = true
                 }
             }
         }
         console.log('miss')
-        return false
+        return this.prevShot = false
+    }
+    paintBoard(cell) {
+        if (this.prevShot) {
+            cell.srcElement.classList.add('hit')
+        } else {
+            cell.srcElement.classList.add('miss')
+        }
     }
 }
 
 const playerBoard = new Gameboard()
 playerBoard.placeShips()
-playerBoard.attackCoord([2, 2], playerBoard.allShips)
 
 
 
-// dom manipulation
+// select all player grid cells
 const cell = document.querySelectorAll('.player-cells')
 
 function addEventListenerByClass(className, event, fn) {
@@ -73,8 +81,13 @@ function addEventListenerByClass(className, event, fn) {
     }
 }
 
-addEventListenerByClass('player-cells', 'click', doSomething);
-function doSomething(e) {
+addEventListenerByClass('player-cells', 'click', getCoordinates);
+function getCoordinates(e) {
+
+    if (e.srcElement.classList.contains('hit') ||
+        e.srcElement.classList.contains('miss')) {
+        return
+    }
     let gridNumber = parseInt(e.srcElement.classList[0])
     console.log(gridNumber)
 
@@ -101,4 +114,9 @@ function doSomething(e) {
 
     const coordinates = convertTableToCoordinates(table, numColumns, gridNumber);
     console.log(coordinates)
-} 
+
+    playerBoard.attackCoord(coordinates, playerBoard.allShips)
+    playerBoard.paintBoard(e)
+}
+
+
