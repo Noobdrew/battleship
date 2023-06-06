@@ -1,6 +1,6 @@
 class Ship {
-    constructor(lenght, helth, alive, coordinates) {
-        this.lenght = lenght
+    constructor(length, helth, alive, coordinates) {
+        this.length = length
         this.helth = helth
         this.alive = alive
         this.coordinates = coordinates
@@ -25,8 +25,8 @@ class Ship {
     }
 }
 
-const ship1 = new Ship(2, 2, true, [[1, 1], [1, 2]])
-const ship2 = new Ship(1, 1, true, [[2, 2]])
+const ship1 = new Ship(3, 3, true, [[1, 1], [1, 2]])
+const ship2 = new Ship(2, 2, true, [[2, 2]])
 const ship3 = new Ship(1, 1, true, [[5, 4]])
 
 class Fleet {
@@ -152,10 +152,78 @@ function attackAtCoord(e) {
     playerBoard.attackCoord(coordinates, playerFleet.aliveShips)
     playerBoard.paintBoard(domElement)
 }
-function placeShipsOnBoard() {
+let currShip = 0
+function placeShipAtCoord(e) {
+    let domElement = e
+
+    let gridNumber = parseInt(domElement.srcElement.classList[0])
+    console.log(gridNumber)
+    let coordinates = getCoordinates(gridNumber)
+    console.log(coordinates)
+    currShip++
+    const playerCells = document.querySelectorAll('.player-cells')
+    playerCells.forEach(element => {
+        element.classList.remove('pending-placement')
+    });
+}
+//visualize placement
+function placeHorizontal(index, ship) {
+    for (let i = 1; i < ship.length; i++) {
+        const nextIndex = index + i;
+        if (nextIndex % 10 === 1) {
+            break; // Break out of the loop if the next div reaches the specified indexes
+        }
+        const element = document.querySelector(`[data-cell='${nextIndex}']`);
+        element.classList.add('pending-placement');
+    }
+}
+function removeHorizontal(index, ship) {
+    for (let i = 1; i < ship.length; i++) {
+        const element = document.querySelector(`[data-cell='${index + i}']`)
+        element.classList.remove('pending-placement')
+    }
+}
+function placeVertical(index, ship) {
+    for (let i = 1; i < ship.length; i++) {
+        const nextIndex = index + i * 10;
+        if (nextIndex > 100) {
+            break; // Break out of the loop if the next index exceeds 100
+        }
+        const element = document.querySelector(`[data-cell='${nextIndex}']`);
+        element.classList.add('pending-placement');
+    }
+}
+function removeVertical(index, ship) {
+    for (let i = 1; i < ship.length; i++) {
+        const element = document.querySelector(`[data-cell='${index + i * 10}']`)
+        element.classList.remove('pending-placement')
+    }
+}
+function displayPlacement(e) {
+    e.srcElement.classList.add('pending-placement')
+    let gridNumber = parseInt(e.srcElement.classList[0])
+
+    const ship = playerFleet.aliveShips[currShip]
+    placeHorizontal(gridNumber, ship)
+    //placeVertical(gridNumber, ship)
 
 }
+function removeDisplayPlacement(e) {
+    e.srcElement.classList.remove('pending-placement')
+    let gridNumber = parseInt(e.srcElement.classList[0])
 
+    const ship = playerFleet.aliveShips[currShip]
+    removeHorizontal(gridNumber, ship)
+    //removeVertical(gridNumber, ship)
+}
+
+
+function placeShipsOnBoard() {
+    addEventListenerByClass('player-cells', 'mouseenter', displayPlacement)
+    addEventListenerByClass('player-cells', 'mouseleave', removeDisplayPlacement)
+    addEventListenerByClass('player-cells', 'click', placeShipAtCoord);
+}
+placeShipsOnBoard()
 function attackEnabled() {
     addEventListenerByClass('player-cells', 'click', attackAtCoord);
 }

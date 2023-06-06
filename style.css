@@ -103,6 +103,10 @@ header {
     background-color: #051522;
 }
 
+.player .pending-placement {
+    background-color: #6cabd3;
+}
+
 .player .hit {
 
     display: flex;
@@ -121,13 +125,13 @@ header {
 
 .cells {
     border: 1px solid black;
-    transition: all 0.15s ease-in-out;
+    transition: all 0.05s ease-in-out;
     background-color: #d1edff;
 
 }
 
 .cells:hover {
-    background-color: #81bfe6;
+    background-color: #6cabd3;
 
 }
 
