@@ -29,7 +29,21 @@ const ship1 = new Ship(2, 2, true, [[1, 1], [1, 2]])
 const ship2 = new Ship(1, 1, true, [[2, 2]])
 const ship3 = new Ship(1, 1, true, [[5, 4]])
 
-const fleet = [ship1, ship2, ship3]
+class Fleet {
+    constructor(aliveShips) {
+        this.aliveShips = aliveShips
+        this.destroyedShips
+    }
+    removeDestroyedShips() {
+        this.aliveShips.forEach((ship, index) => {
+            if (ship.helth <= 0) {
+                this.destroyedShips = this.aliveShips.splice(index, 1)
+            }
+        });
+    }
+}
+
+const playerFleet = new Fleet([ship1, ship2, ship3])
 //2.create game board as an array 3x3 for starters 
 
 class Gameboard {
@@ -38,24 +52,38 @@ class Gameboard {
         this.prevShot = false
     }
     placeShips() {
-        fleet.forEach(ship => {
-            this.allShips.push(ship.coordinates)
+        playerFleet.aliveShips.forEach(ship => {
+            this.allShips.push(ship)
         });
     }
     attackCoord(arr1, arr2) {
-        arr2 = arr2.flat(2)
-        for (let i = 0; i < arr2.length; i++) {
-            if (i % 2 == 0) {
-                if (arr2[i] == arr1[0] &&
-                    arr2[i + 1] == arr1[1]) {
-                    console.log('hit')
 
-                    return this.prevShot = true
+
+        for (let j = 0; j < arr2.length; j++) {
+            let ship = arr2[j]
+            let shipCoords = ship.coordinates
+            shipCoords = shipCoords.flat(2)
+
+            for (let i = 0; i < shipCoords.length; i++) {
+                if (i % 2 == 0) {
+                    if (shipCoords[i] == arr1[0] &&
+                        shipCoords[i + 1] == arr1[1]) {
+                        console.log('hit')
+                        ship.hit()
+                        playerFleet.removeDestroyedShips()
+                        return this.prevShot = true
+                    }
+                    else {
+
+                    }
                 }
             }
+
         }
+
         console.log('miss')
         return this.prevShot = false
+
     }
     paintBoard(cell) {
         if (this.prevShot) {
@@ -66,9 +94,11 @@ class Gameboard {
     }
 }
 
+function compareCoords() {
+
+}
 const playerBoard = new Gameboard()
 playerBoard.placeShips()
-
 
 
 // select all player grid cells
