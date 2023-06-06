@@ -90,9 +90,17 @@ header {
     background-color: rgb(60, 170, 224);
 }
 
+.player .miss:hover {
+    background-color: rgb(53, 162, 216);
+}
+
 .miss::after {
     content: "X";
 
+}
+
+.player .ship {
+    background-color: #051522;
 }
 
 .player .hit {
@@ -103,6 +111,10 @@ header {
     background-color: rgb(204, 102, 102);
 }
 
+.player .hit:hover {
+    background-color: rgb(196, 94, 94);
+}
+
 .hit::after {
     content: "X";
 }
@@ -111,10 +123,12 @@ header {
     border: 1px solid black;
     transition: all 0.15s ease-in-out;
     background-color: #d1edff;
+
 }
 
 .cells:hover {
-    background-color: #208ab4;
+    background-color: #81bfe6;
+
 }
 
 .button-container {

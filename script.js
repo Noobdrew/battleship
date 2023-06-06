@@ -56,8 +56,8 @@ class Gameboard {
             this.allShips.push(ship)
         });
     }
-    attackCoord(arr1, arr2) {
 
+    attackCoord(arr1, arr2) {
 
         for (let j = 0; j < arr2.length; j++) {
             let ship = arr2[j]
@@ -73,18 +73,15 @@ class Gameboard {
                         playerFleet.removeDestroyedShips()
                         return this.prevShot = true
                     }
-                    else {
-
-                    }
                 }
             }
-
         }
 
         console.log('miss')
         return this.prevShot = false
 
     }
+
     paintBoard(cell) {
         if (this.prevShot) {
             cell.srcElement.classList.add('hit')
@@ -94,15 +91,10 @@ class Gameboard {
     }
 }
 
-function compareCoords() {
-
-}
 const playerBoard = new Gameboard()
 playerBoard.placeShips()
 
 
-// select all player grid cells
-const cell = document.querySelectorAll('.player-cells')
 
 function addEventListenerByClass(className, event, fn) {
     var list = document.getElementsByClassName(className);
@@ -110,17 +102,13 @@ function addEventListenerByClass(className, event, fn) {
         list[i].addEventListener(event, fn, false);
     }
 }
-
-addEventListenerByClass('player-cells', 'click', getCoordinates);
-function getCoordinates(e) {
-
-    if (e.srcElement.classList.contains('hit') ||
-        e.srcElement.classList.contains('miss')) {
-        return
+function removeEventListenerByClass(className, event, fn) {
+    var list = document.getElementsByClassName(className);
+    for (var i = 0, len = list.length; i < len; i++) {
+        list[i].removeEventListener(event, fn, false);
     }
-    let gridNumber = parseInt(e.srcElement.classList[0])
-    console.log(gridNumber)
-
+}
+function getCoordinates(index) {
     function convertTableToCoordinates(tableInteger, numColumns, findCoordinate) {
         const values = Array.from({ length: tableInteger }, (_, i) => i + 1);
         const coordinates = [];
@@ -142,11 +130,37 @@ function getCoordinates(e) {
     const table = 100;
     const numColumns = 10;
 
-    const coordinates = convertTableToCoordinates(table, numColumns, gridNumber);
+    const coordinates = convertTableToCoordinates(table, numColumns, index);
+    return coordinates
+
+}
+
+function attackAtCoord(e) {
+    let domElement = e
+    if (domElement.srcElement.classList.contains('hit') ||
+        domElement.srcElement.classList.contains('miss')) {
+        return
+    }
+
+    let gridNumber = parseInt(domElement.srcElement.classList[0])
+    console.log(gridNumber)
+    let coordinates = getCoordinates(gridNumber)
     console.log(coordinates)
 
-    playerBoard.attackCoord(coordinates, playerBoard.allShips)
-    playerBoard.paintBoard(e)
+
+
+    playerBoard.attackCoord(coordinates, playerFleet.aliveShips)
+    playerBoard.paintBoard(domElement)
+}
+function placeShipsOnBoard() {
+
+}
+
+function attackEnabled() {
+    addEventListenerByClass('player-cells', 'click', attackAtCoord);
+}
+function attackDisabled() {
+    removeEventListenerByClass('player-cells', 'click', attackAtCoord)
 }
 
 
