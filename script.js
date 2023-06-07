@@ -304,6 +304,7 @@ function stopPlacement() {
     removeEventListenerByClass('player-cells', 'mousemove', displayPlacement)
     removeEventListenerByClass('player-cells', 'mouseleave', removeDisplayPlacement)
     removeEventListenerByClass('player-cells', 'click', placeShipAtCoord);
+    removeEventListenerByClass('player-cells', 'contextmenu', togglePlacement)
 }
 function attackEnabled() {
     addEventListenerByClass('player-cells', 'click', attackAtCoord);
