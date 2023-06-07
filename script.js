@@ -164,17 +164,32 @@ function placeShipAtCoord(e) {
 
     let shipCoordinates = playerFleet.aliveShips[currShip].coordinates
     shipCoordinates[0] = coordinates
+
+    const currCell = document.querySelector(`[data-cell='${gridNumber}']`)
+    console.log(currCell)
+
+    if (currCell.classList.contains('ship')) {
+        console.log('Invalid Placement')
+
+        return
+    }
     for (let i = 1; i < shipCoordinates.length; i++) {
         let nextCoord = coordinates[0] + i
         shipCoordinates[i] = [nextCoord, coordinates[1]]
         if (nextCoord > 10) {
             console.log('Invalid Placement')
-            currShip = 0
             return
         }
-
-
     }
+    for (let i = 1; i < shipCoordinates.length; i++) {
+        let nextCoord = coordinates[1] + i
+        shipCoordinates[i] = [coordinates[1], nextCoord]
+        if (nextCoord > 10) {
+            console.log('Invalid Placement')
+            return
+        }
+    }
+
     placeShipPermanent(gridNumber, ship)
     console.log(shipCoordinates)
     const playerCells = document.querySelectorAll('.player-cells')
@@ -194,16 +209,11 @@ function placeShipAtCoord(e) {
 }
 //visualize placement
 function placeShipPermanent(index, ship) {
-    const current = document.querySelector(`[data-cell='${index}']`);
-    current.classList.add('ship');
-    for (let i = 1; i < ship.length; i++) {
-        const nextIndex = index + i;
-        if (nextIndex % 10 === 1) {
-            break; // Break out of the loop if the next div reaches the specified indexes
-        }
-        const element = document.querySelector(`[data-cell='${nextIndex}']`);
-        element.classList.add('ship');
-    }
+    const pendingPlacement = document.querySelectorAll(`.pending-placement`);
+    console.log(pendingPlacement)
+    pendingPlacement.forEach(element => {
+        element.classList.add('ship')
+    });
 }
 function placeHorizontal(index, ship) {
     for (let i = 1; i < ship.length; i++) {
@@ -245,13 +255,21 @@ function removeVertical(index, ship) {
         element.classList.remove('pending-placement');
     }
 }
+
+let isHorizontal = true;
+
 function displayPlacement(e) {
     e.srcElement.classList.add('pending-placement')
     let gridNumber = parseInt(e.srcElement.classList[0])
 
     const ship = playerFleet.aliveShips[currShip]
-    placeHorizontal(gridNumber, ship)
-    //placeVertical(gridNumber, ship)
+
+
+    if (isHorizontal) {
+        placeHorizontal(gridNumber, ship);
+    } else {
+        placeVertical(gridNumber, ship);
+    }
 
 }
 function removeDisplayPlacement(e) {
@@ -259,18 +277,31 @@ function removeDisplayPlacement(e) {
     let gridNumber = parseInt(e.srcElement.classList[0])
 
     const ship = playerFleet.aliveShips[currShip]
-    removeHorizontal(gridNumber, ship)
-    //removeVertical(gridNumber, ship)
-}
 
+    if (isHorizontal) {
+        removeHorizontal(gridNumber, ship);
+    } else {
+        removeVertical(gridNumber, ship);
+    }
+
+}
+function togglePlacement(e) {
+    const cells = document.querySelectorAll('.pending-placement')
+    cells.forEach(element => {
+        element.classList.remove('pending-placement')
+    });
+    e.preventDefault()
+    isHorizontal = !isHorizontal;
+}
 
 function placeShipsOnBoard() {
-    addEventListenerByClass('player-cells', 'mouseenter', displayPlacement)
+    addEventListenerByClass('player-cells', 'mousemove', displayPlacement)
     addEventListenerByClass('player-cells', 'mouseleave', removeDisplayPlacement)
     addEventListenerByClass('player-cells', 'click', placeShipAtCoord);
+    addEventListenerByClass('player-cells', 'contextmenu', togglePlacement)
 }
 function stopPlacement() {
-    removeEventListenerByClass('player-cells', 'mouseenter', displayPlacement)
+    removeEventListenerByClass('player-cells', 'mousemove', displayPlacement)
     removeEventListenerByClass('player-cells', 'mouseleave', removeDisplayPlacement)
     removeEventListenerByClass('player-cells', 'click', placeShipAtCoord);
 }
