@@ -356,3 +356,7 @@ function attackDisabled(board) {
 
 
 playerPlacementModule()
+
+//place computer ships randomly on comp board
+//create a turn based function calls
+//check computerFleet and playerFleet after every turn to check for winners
