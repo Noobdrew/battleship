@@ -173,23 +173,29 @@ function placeShipAtCoord(e) {
 
         return
     }
-    for (let i = 1; i < shipCoordinates.length; i++) {
-        let nextCoord = coordinates[0] + i
-        shipCoordinates[i] = [nextCoord, coordinates[1]]
-        if (nextCoord > 10) {
-            console.log('Invalid Placement')
-            return
-        }
-    }
-    for (let i = 1; i < shipCoordinates.length; i++) {
-        let nextCoord = coordinates[1] + i
-        shipCoordinates[i] = [coordinates[1], nextCoord]
-        if (nextCoord > 10) {
-            console.log('Invalid Placement')
-            return
-        }
-    }
+    if (isHorizontal) {
+        for (let i = 1; i < shipCoordinates.length; i++) {
+            let nextCoord = coordinates[0] + i
+            if (nextCoord > 10) {
+                console.log('Invalid Placement')
+                return
+            }
 
+            shipCoordinates[i] = [nextCoord, coordinates[1]]
+
+        }
+    } else {
+        for (let i = 1; i < shipCoordinates.length; i++) {
+            let nextCoord = coordinates[1] + i
+            if (nextCoord > 10) {
+                console.log('Invalid Placement')
+                return
+            }
+
+            shipCoordinates[i] = [coordinates[0], nextCoord]
+
+        }
+    }
     placeShipPermanent(gridNumber, ship)
     console.log(shipCoordinates)
     const playerCells = document.querySelectorAll('.player-cells')
