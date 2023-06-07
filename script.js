@@ -24,7 +24,7 @@ class Ship {
         }
     }
 }
-
+let battlePhase = false
 const ship1 = new Ship(3, 3, true, [[0, 0], [0, 0], [0, 0]])
 const ship2 = new Ship(2, 2, true, [[0, 0], [0, 0]])
 const ship3 = new Ship(1, 1, true, [[0, 0]])
@@ -96,16 +96,16 @@ playerBoard.placeShips()
 
 
 
-function addEventListenerByClass(className, event, fn) {
+function addEventListenerByClass(className, event, fn, repaet = false) {
     var list = document.getElementsByClassName(className);
     for (var i = 0, len = list.length; i < len; i++) {
-        list[i].addEventListener(event, fn, false);
+        list[i].addEventListener(event, fn, { once: repaet }, false);
     }
 }
-function removeEventListenerByClass(className, event, fn) {
+function removeEventListenerByClass(className, event, fn, repeat = false) {
     var list = document.getElementsByClassName(className);
     for (var i = 0, len = list.length; i < len; i++) {
-        list[i].removeEventListener(event, fn, false);
+        list[i].removeEventListener(event, fn, { once: repeat }, false);
     }
 }
 function getCoordinates(index) {
@@ -135,7 +135,7 @@ function getCoordinates(index) {
 
 }
 
-function attackAtCoord(e) {
+function attackAtCoord(e, board) {
     let domElement = e
     if (domElement.srcElement.classList.contains('hit') ||
         domElement.srcElement.classList.contains('miss')) {
@@ -149,173 +149,210 @@ function attackAtCoord(e) {
 
 
 
-    playerBoard.attackCoord(coordinates, playerFleet.aliveShips)
-    playerBoard.paintBoard(domElement)
+    board.attackCoord(coordinates, playerFleet.aliveShips)
+    board.paintBoard(domElement)
 }
-let currShip = 0
-function placeShipAtCoord(e) {
-    let domElement = e
 
-    let gridNumber = parseInt(domElement.srcElement.classList[0])
-    console.log(gridNumber)
-    let coordinates = getCoordinates(gridNumber)
-    console.log(coordinates)
-    const ship = playerFleet.aliveShips[currShip]
+//ship visualization and player placement module
+function playerPlacementModule() {
+    let currShip = 0
+    let isHorizontal = true;
+    function placeShipAtCoord(e) {
+        let domElement = e
 
-    let shipCoordinates = playerFleet.aliveShips[currShip].coordinates
-    shipCoordinates[0] = coordinates
+        let gridNumber = parseInt(domElement.srcElement.classList[0])
+        console.log(gridNumber)
+        let coordinates = getCoordinates(gridNumber)
+        console.log(coordinates)
+        const ship = playerFleet.aliveShips[currShip]
 
-    const currCell = document.querySelector(`[data-cell='${gridNumber}']`)
-    console.log(currCell)
+        let shipCoordinates = playerFleet.aliveShips[currShip].coordinates
+        shipCoordinates[0] = coordinates
 
-    if (currCell.classList.contains('ship')) {
-        console.log('Invalid Placement')
+        const currCell = document.querySelector(`[data-cell='${gridNumber}']`)
 
-        return
-    }
-    if (isHorizontal) {
-        for (let i = 1; i < shipCoordinates.length; i++) {
-            let nextCoord = coordinates[0] + i
-            if (nextCoord > 10) {
-                console.log('Invalid Placement')
-                return
+        console.log(currCell)
+
+        //return if placed on existing ship
+        if (currCell.classList.contains('ship')) {
+            console.log('Invalid Placement')
+            return
+        }
+
+        //place ships horizontal
+        if (isHorizontal) {
+
+            for (let i = 1; i < shipCoordinates.length; i++) {
+                let nextCoord = coordinates[0] + i
+                let nextGridCell = gridNumber + i
+                let nextGridCellElement = document.querySelector(`[data-cell='${nextGridCell}']`)
+                if (nextCoord > 10) {
+                    console.log('Invalid Placement')
+                    return
+                }
+                if (nextGridCellElement.classList.contains('ship')) {
+                    console.log('Invalid Placement')
+                    return
+                }
+                console.log(nextGridCell)
+
+                shipCoordinates[i] = [nextCoord, coordinates[1]]
+
             }
+            //place ships vertical
+        } else {
+            for (let i = 1; i < shipCoordinates.length; i++) {
+                let nextCoord = coordinates[1] + i
+                let nextGridCell = gridNumber + i * 10
+                let nextGridCellElement = document.querySelector(`[data-cell='${nextGridCell}']`)
+                if (nextCoord > 10) {
+                    console.log('Invalid Placement')
+                    return
+                }
+                if (nextGridCellElement.classList.contains('ship')) {
+                    console.log('Invalid Placement')
+                    return
+                }
+                console.log(nextGridCell)
+                shipCoordinates[i] = [coordinates[0], nextCoord]
 
-            shipCoordinates[i] = [nextCoord, coordinates[1]]
-
-        }
-    } else {
-        for (let i = 1; i < shipCoordinates.length; i++) {
-            let nextCoord = coordinates[1] + i
-            if (nextCoord > 10) {
-                console.log('Invalid Placement')
-                return
             }
-
-            shipCoordinates[i] = [coordinates[0], nextCoord]
-
+        }
+        //paint board with ship placement
+        placeShipPermanent()
+        console.log(shipCoordinates)
+        const playerCells = document.querySelectorAll('.pending-placement')
+        playerCells.forEach(element => {
+            element.classList.remove('pending-placement')
+        });
+        if (currShip == playerFleet.aliveShips.length - 1) {
+            console.log('Placement done')
+            stopPlacement()
+            battlePhase = true
+            attackEnabled(playerBoard)
+        }
+        if (currShip < playerFleet.aliveShips.length - 1) {
+            currShip++
+            console.log(currShip)
         }
     }
-    placeShipPermanent(gridNumber, ship)
-    console.log(shipCoordinates)
-    const playerCells = document.querySelectorAll('.player-cells')
-    playerCells.forEach(element => {
-        element.classList.remove('pending-placement')
-    });
-    if (currShip == playerFleet.aliveShips.length - 1) {
-        console.log('Placement done')
-        stopPlacement()
-        attackEnabled()
+    //visualize placement
+    function placeShipPermanent() {
+        const pendingPlacement = document.querySelectorAll(`.pending-placement`);
+        console.log(pendingPlacement)
+        pendingPlacement.forEach(element => {
+            element.classList.add('ship')
+        });
     }
-    if (currShip < playerFleet.aliveShips.length - 1) {
-        currShip++
-        console.log(currShip)
-    }
-
-}
-//visualize placement
-function placeShipPermanent(index, ship) {
-    const pendingPlacement = document.querySelectorAll(`.pending-placement`);
-    console.log(pendingPlacement)
-    pendingPlacement.forEach(element => {
-        element.classList.add('ship')
-    });
-}
-function placeHorizontal(index, ship) {
-    for (let i = 1; i < ship.length; i++) {
-        const nextIndex = index + i;
-        if (nextIndex % 10 === 1) {
-            break; // Break out of the loop if the next div reaches the specified indexes
+    function placeHorizontal(index, ship) {
+        for (let i = 1; i < ship.length; i++) {
+            const nextIndex = index + i;
+            if (nextIndex % 10 === 1) {
+                break; // Break out of the loop if the next div reaches the specified indexes
+            }
+            const element = document.querySelector(`[data-cell='${nextIndex}']`);
+            element.classList.add('pending-placement');
         }
-        const element = document.querySelector(`[data-cell='${nextIndex}']`);
-        element.classList.add('pending-placement');
     }
-}
-function removeHorizontal(index, ship) {
-    for (let i = 1; i < ship.length; i++) {
-        const nextIndex = index + i;
-        if (nextIndex % 10 === 1) {
-            break; // Break out of the loop if the next div reaches the specified indexes
+    function removeHorizontal(index, ship) {
+        for (let i = 1; i < ship.length; i++) {
+            const nextIndex = index + i;
+            if (nextIndex % 10 === 1) {
+                break; // Break out of the loop if the next div reaches the specified indexes
+            }
+            const element = document.querySelector(`[data-cell='${nextIndex}']`);
+            element.classList.remove('pending-placement');
         }
-        const element = document.querySelector(`[data-cell='${nextIndex}']`);
-        element.classList.remove('pending-placement');
     }
-}
-function placeVertical(index, ship) {
-    for (let i = 1; i < ship.length; i++) {
-        const nextIndex = index + i * 10;
-        if (nextIndex > 100) {
-            break; // Break out of the loop if the next index exceeds 100
+    function placeVertical(index, ship) {
+        for (let i = 1; i < ship.length; i++) {
+            const nextIndex = index + i * 10;
+            if (nextIndex > 100) {
+                break; // Break out of the loop if the next index exceeds 100
+            }
+            const element = document.querySelector(`[data-cell='${nextIndex}']`);
+            element.classList.add('pending-placement');
         }
-        const element = document.querySelector(`[data-cell='${nextIndex}']`);
-        element.classList.add('pending-placement');
     }
-}
-function removeVertical(index, ship) {
-    for (let i = 1; i < ship.length; i++) {
-        const nextIndex = index + i * 10;
-        if (nextIndex > 100) {
-            break; // Break out of the loop if the next index exceeds 100
+    function removeVertical(index, ship) {
+        for (let i = 1; i < ship.length; i++) {
+            const nextIndex = index + i * 10;
+            if (nextIndex > 100) {
+                break; // Break out of the loop if the next index exceeds 100
+            }
+            const element = document.querySelector(`[data-cell='${nextIndex}']`);
+            element.classList.remove('pending-placement');
         }
-        const element = document.querySelector(`[data-cell='${nextIndex}']`);
-        element.classList.remove('pending-placement');
-    }
-}
-
-let isHorizontal = true;
-
-function displayPlacement(e) {
-    e.srcElement.classList.add('pending-placement')
-    let gridNumber = parseInt(e.srcElement.classList[0])
-
-    const ship = playerFleet.aliveShips[currShip]
-
-
-    if (isHorizontal) {
-        placeHorizontal(gridNumber, ship);
-    } else {
-        placeVertical(gridNumber, ship);
     }
 
-}
-function removeDisplayPlacement(e) {
-    e.srcElement.classList.remove('pending-placement')
-    let gridNumber = parseInt(e.srcElement.classList[0])
 
-    const ship = playerFleet.aliveShips[currShip]
 
-    if (isHorizontal) {
-        removeHorizontal(gridNumber, ship);
-    } else {
-        removeVertical(gridNumber, ship);
+    function displayPlacement(e) {
+        e.srcElement.classList.add('pending-placement')
+        let gridNumber = parseInt(e.srcElement.classList[0])
+
+        const ship = playerFleet.aliveShips[currShip]
+
+
+        if (isHorizontal) {
+            placeHorizontal(gridNumber, ship);
+        } else {
+            placeVertical(gridNumber, ship);
+        }
+
+    }
+    function removeDisplayPlacement(e) {
+        e.srcElement.classList.remove('pending-placement')
+        let gridNumber = parseInt(e.srcElement.classList[0])
+
+        const ship = playerFleet.aliveShips[currShip]
+
+        if (isHorizontal) {
+            removeHorizontal(gridNumber, ship);
+        } else {
+            removeVertical(gridNumber, ship);
+        }
+
+    }
+    function togglePlacement(e) {
+        const cells = document.querySelectorAll('.pending-placement')
+        cells.forEach(element => {
+            element.classList.remove('pending-placement')
+        });
+
+        e.preventDefault()
+        isHorizontal = !isHorizontal;
+        displayPlacement(e)
     }
 
-}
-function togglePlacement(e) {
-    const cells = document.querySelectorAll('.pending-placement')
-    cells.forEach(element => {
-        element.classList.remove('pending-placement')
-    });
-    e.preventDefault()
-    isHorizontal = !isHorizontal;
+    function placeShipsOnBoard() {
+        addEventListenerByClass('player-cells', 'mouseenter', displayPlacement)
+        addEventListenerByClass('player-cells', 'mouseleave', removeDisplayPlacement)
+        addEventListenerByClass('player-cells', 'click', placeShipAtCoord);
+        addEventListenerByClass('player-cells', 'contextmenu', togglePlacement)
+    }
+    function stopPlacement() {
+        removeEventListenerByClass('player-cells', 'mouseenter', displayPlacement)
+        removeEventListenerByClass('player-cells', 'mouseleave', removeDisplayPlacement)
+        removeEventListenerByClass('player-cells', 'click', placeShipAtCoord);
+        removeEventListenerByClass('player-cells', 'contextmenu', togglePlacement)
+    }
+    placeShipsOnBoard()
 }
 
-function placeShipsOnBoard() {
-    addEventListenerByClass('player-cells', 'mousemove', displayPlacement)
-    addEventListenerByClass('player-cells', 'mouseleave', removeDisplayPlacement)
-    addEventListenerByClass('player-cells', 'click', placeShipAtCoord);
-    addEventListenerByClass('player-cells', 'contextmenu', togglePlacement)
+function attackEnabled(board) {
+    if (battlePhase = true) {
+        addEventListenerByClass('player-cells', 'click', function (e) {
+            attackAtCoord(e, board)
+        });
+    }
 }
-function stopPlacement() {
-    removeEventListenerByClass('player-cells', 'mousemove', displayPlacement)
-    removeEventListenerByClass('player-cells', 'mouseleave', removeDisplayPlacement)
-    removeEventListenerByClass('player-cells', 'click', placeShipAtCoord);
-    removeEventListenerByClass('player-cells', 'contextmenu', togglePlacement)
+function attackDisabled(board) {
+    removeEventListenerByClass('player-cells', 'click', function (e) {
+        attackAtCoord(e, board)
+    })
 }
-function attackEnabled() {
-    addEventListenerByClass('player-cells', 'click', attackAtCoord);
-}
-function attackDisabled() {
-    removeEventListenerByClass('player-cells', 'click', attackAtCoord)
-}
-placeShipsOnBoard()
+
+
+
+playerPlacementModule()
