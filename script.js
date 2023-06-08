@@ -4,7 +4,6 @@ class Ship {
         this.helth = helth
         this.alive = alive
         this.coordinates = coordinates
-
     }
     hit() {
         if (this.alive == false) {
@@ -14,8 +13,6 @@ class Ship {
         this.helth--
         console.log('Ship hit!!')
         this.isSunk()
-
-
     }
     isSunk() {
         if (this.helth == 0) {
@@ -24,16 +21,6 @@ class Ship {
         }
     }
 }
-let battlePhase = false
-const ship1 = new Ship(4, 4, true, [[0, 0], [0, 0], [0, 0], [0, 0]])
-const ship2 = new Ship(3, 3, true, [[0, 0], [0, 0], [0, 0]])
-const ship3 = new Ship(3, 3, true, [[0, 0], [0, 0], [0, 0]])
-const ship4 = new Ship(2, 2, true, [[0, 0], [0, 0]])
-const ship5 = new Ship(2, 2, true, [[0, 0], [0, 0]])
-const ship6 = new Ship(2, 2, true, [[0, 0], [0, 0]])
-const ship7 = new Ship(1, 1, true, [[0, 0]])
-const ship8 = new Ship(1, 1, true, [[0, 0]])
-
 class Fleet {
     constructor(aliveShips) {
         this.aliveShips = aliveShips
@@ -56,13 +43,7 @@ class Fleet {
         }
         return false; // Coordinate is not occupied by any ship
     }
-
 }
-
-const playerFleet = new Fleet([
-    ship1, ship2, ship3, ship4, ship5, ship6, ship7, ship8])
-//2.create game board as an array 3x3 for starters 
-
 class Gameboard {
     constructor() {
         this.allShips = []
@@ -73,9 +54,8 @@ class Gameboard {
             this.allShips.push(ship)
         });
     }
-
     attackCoord(arr1, arr2) {
-
+        this.prevShot = false
         for (let j = 0; j < arr2.aliveShips.length; j++) {
             let ship = arr2.aliveShips[j]
             let shipCoords = ship.coordinates
@@ -86,6 +66,7 @@ class Gameboard {
                     if (shipCoords[i] == arr1[0] &&
                         shipCoords[i + 1] == arr1[1]) {
                         console.log('hit')
+
                         ship.hit()
                         arr2.removeDestroyedShips()
                         return this.prevShot = true
@@ -93,25 +74,51 @@ class Gameboard {
                 }
             }
         }
-
         console.log('miss')
         return this.prevShot = false
-
     }
-
     paintBoard(cell) {
         if (this.prevShot) {
-            cell.srcElement.classList.add('hit')
+            cell.classList.add('hit')
         } else {
-            cell.srcElement.classList.add('miss')
+            cell.classList.add('miss')
         }
     }
 }
+//player definitions
+const ship1 = new Ship(4, 4, true, [[0, 0], [0, 0], [0, 0], [0, 0]])
+const ship2 = new Ship(3, 3, true, [[0, 0], [0, 0], [0, 0]])
+const ship3 = new Ship(3, 3, true, [[0, 0], [0, 0], [0, 0]])
+const ship4 = new Ship(2, 2, true, [[0, 0], [0, 0]])
+const ship5 = new Ship(2, 2, true, [[0, 0], [0, 0]])
+const ship6 = new Ship(2, 2, true, [[0, 0], [0, 0]])
+const ship7 = new Ship(1, 1, true, [[0, 0]])
+const ship8 = new Ship(1, 1, true, [[0, 0]])
+const playerFleet = new Fleet([
+    ship1, ship2, ship3, ship4, ship5, ship6, ship7, ship8])
 
 const playerBoard = new Gameboard()
 playerBoard.placeShips()
 
+//computer definitions
+const computerShip1 = new Ship(4, 4, true, [[0, 0], [0, 0], [0, 0], [0, 0]])
+const computerShip2 = new Ship(3, 3, true, [[0, 0], [0, 0], [0, 0]])
+const computerShip3 = new Ship(3, 3, true, [[0, 0], [0, 0], [0, 0]])
+const computerShip4 = new Ship(2, 2, true, [[0, 0], [0, 0]])
+const computerShip5 = new Ship(2, 2, true, [[0, 0], [0, 0]])
+const computerShip6 = new Ship(2, 2, true, [[0, 0], [0, 0]])
+const computerShip7 = new Ship(1, 1, true, [[0, 0]])
+const computerShip8 = new Ship(1, 1, true, [[0, 0]])
 
+const computerFleet = new Fleet([
+    computerShip1, computerShip2, computerShip3, computerShip4,
+    computerShip5, computerShip6, computerShip7, computerShip8])
+
+const computerBoard = new Gameboard()
+placeComputerShips(computerFleet)
+
+let battlePhase = false
+let currentTurn = 0
 
 function addEventListenerByClass(className, event, fn, repaet = false) {
     var list = document.getElementsByClassName(className);
@@ -153,21 +160,20 @@ function getCoordinates(index) {
 }
 
 function attackAtCoord(e, board, fleet) {
-    let domElement = e
-    if (domElement.srcElement.classList.contains('hit') ||
-        domElement.srcElement.classList.contains('miss')) {
+
+    let domElement = e.srcElement
+
+    if (domElement.classList.contains('hit') ||
+        domElement.classList.contains('miss')) {
         return
     }
-
-    let gridNumber = parseInt(domElement.srcElement.classList[0])
-    console.log(gridNumber)
+    let gridNumber = parseInt(domElement.classList[0])
     let coordinates = getCoordinates(gridNumber)
-    console.log(coordinates)
-
-
 
     board.attackCoord(coordinates, fleet)
     board.paintBoard(domElement)
+
+
 }
 
 //ship visualization and player placement module
@@ -178,17 +184,13 @@ function playerPlacementModule() {
         let domElement = e
 
         let gridNumber = parseInt(domElement.srcElement.classList[0])
-        console.log(gridNumber)
         let coordinates = getCoordinates(gridNumber)
-        console.log(coordinates)
         const ship = playerFleet.aliveShips[currShip]
 
         let shipCoordinates = playerFleet.aliveShips[currShip].coordinates
         shipCoordinates[0] = coordinates
 
         const currCell = document.querySelector(`[data-cell='${gridNumber}']`)
-
-        console.log(currCell)
 
         //return if placed on existing ship
         if (currCell.classList.contains('ship')) {
@@ -237,7 +239,6 @@ function playerPlacementModule() {
         }
         //paint board with ship placement
         placeShipPermanent()
-        console.log(shipCoordinates)
         const playerCells = document.querySelectorAll('.pending-placement')
         playerCells.forEach(element => {
             element.classList.remove('pending-placement')
@@ -246,17 +247,17 @@ function playerPlacementModule() {
             console.log('Placement done')
             stopPlacement()
             battlePhase = true
-            attackEnabled(playerBoard, 'player-cells', playerFleet)
+            //attack computer board
+            attackEnabled(computerBoard, 'comp-cell', computerFleet)
         }
         if (currShip < playerFleet.aliveShips.length - 1) {
             currShip++
-            console.log(currShip)
+
         }
     }
     //visualize placement
     function placeShipPermanent() {
         const pendingPlacement = document.querySelectorAll(`.pending-placement`);
-        console.log(pendingPlacement)
         pendingPlacement.forEach(element => {
             element.classList.add('ship')
         });
@@ -375,14 +376,7 @@ function attackDisabled(board, domElement, fleet) {
 playerPlacementModule()
 
 //create computer ships
-const computerShip1 = new Ship(4, 4, true, [[0, 0], [0, 0], [0, 0], [0, 0]])
-const computerShip2 = new Ship(3, 3, true, [[0, 0], [0, 0], [0, 0]])
-const computerShip3 = new Ship(3, 3, true, [[0, 0], [0, 0], [0, 0]])
-const computerShip4 = new Ship(2, 2, true, [[0, 0], [0, 0]])
-const computerShip5 = new Ship(2, 2, true, [[0, 0], [0, 0]])
-const computerShip6 = new Ship(2, 2, true, [[0, 0], [0, 0]])
-const computerShip7 = new Ship(1, 1, true, [[0, 0]])
-const computerShip8 = new Ship(1, 1, true, [[0, 0]])
+
 //place computer ships at random coords
 
 function placeComputerShips(fleet) {
@@ -442,11 +436,42 @@ function placeComputerShips(fleet) {
     });
 }
 
-const computerFleet = new Fleet([
-    computerShip1, computerShip2, computerShip3, computerShip4,
-    computerShip5, computerShip6, computerShip7, computerShip8])
-placeComputerShips(computerFleet)
-const computerBoard = new Gameboard()
-attackEnabled(playerBoard, 'comp-cell', computerFleet)
+//attack the player board
+function generateUniqueNumber() {
+    let usedNumbers = []
+    let randomNumber;
+
+    do {
+        randomNumber = Math.floor(Math.random() * 100) + 1;
+    } while (usedNumbers.includes(randomNumber));
+
+    usedNumbers.push(randomNumber);
+    return randomNumber;
+}
+function computerAttack(board, fleet) {
+    let gridNumber = generateUniqueNumber()
+    let coordinates = getCoordinates(gridNumber)
+    let domElement = document.querySelector(`[data-cell='${gridNumber}']`)
+    board.attackCoord(coordinates, fleet)
+
+    board.paintBoard(domElement)
+
+}
+//attackEnabled(playerBoard, 'player-cells', playerFleet)
 //create a turn based function calls
+
+function turnOrder() {
+    currentTurn++
+    console.log(currentTurn)
+    if (currentTurn % 2 == 0) {
+        attackDisabled(playerBoard, 'player-cells', playerFleet)
+        attackEnabled(computerBoard, 'comp-cell', computerFleet)
+    } else {
+        computerAttack(playerBoard, playerFleet)
+        attackDisabled(computerBoard, 'comp-cell', computerFleet)
+    }
+}
+
+
+//computerAttack(playerBoard, playerFleet)
 //check computerFleet and playerFleet after every turn to check for winners
