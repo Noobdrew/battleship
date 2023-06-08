@@ -460,18 +460,6 @@ function computerAttack(board, fleet) {
 //attackEnabled(playerBoard, 'player-cells', playerFleet)
 //create a turn based function calls
 
-function turnOrder() {
-    currentTurn++
-    console.log(currentTurn)
-    if (currentTurn % 2 == 0) {
-        attackDisabled(playerBoard, 'player-cells', playerFleet)
-        attackEnabled(computerBoard, 'comp-cell', computerFleet)
-    } else {
-        computerAttack(playerBoard, playerFleet)
-        attackDisabled(computerBoard, 'comp-cell', computerFleet)
-    }
-}
-
 
 //computerAttack(playerBoard, playerFleet)
 //check computerFleet and playerFleet after every turn to check for winners
