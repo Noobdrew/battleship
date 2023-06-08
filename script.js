@@ -25,9 +25,14 @@ class Ship {
     }
 }
 let battlePhase = false
-const ship1 = new Ship(3, 3, true, [[0, 0], [0, 0], [0, 0]])
-const ship2 = new Ship(2, 2, true, [[0, 0], [0, 0]])
-const ship3 = new Ship(1, 1, true, [[0, 0]])
+const ship1 = new Ship(4, 4, true, [[0, 0], [0, 0], [0, 0], [0, 0]])
+const ship2 = new Ship(3, 3, true, [[0, 0], [0, 0], [0, 0]])
+const ship3 = new Ship(3, 3, true, [[0, 0], [0, 0], [0, 0]])
+const ship4 = new Ship(2, 2, true, [[0, 0], [0, 0]])
+const ship5 = new Ship(2, 2, true, [[0, 0], [0, 0]])
+const ship6 = new Ship(2, 2, true, [[0, 0], [0, 0]])
+const ship7 = new Ship(1, 1, true, [[0, 0]])
+const ship8 = new Ship(1, 1, true, [[0, 0]])
 
 class Fleet {
     constructor(aliveShips) {
@@ -41,9 +46,21 @@ class Fleet {
             }
         });
     }
+    isOccupied(x, y) {
+        for (const ship of this.aliveShips) {
+            for (const [shipX, shipY] of ship.coordinates) {
+                if (shipX === x && shipY === y) {
+                    return true; // Coordinate is occupied by a ship
+                }
+            }
+        }
+        return false; // Coordinate is not occupied by any ship
+    }
+
 }
 
-const playerFleet = new Fleet([ship1, ship2, ship3])
+const playerFleet = new Fleet([
+    ship1, ship2, ship3, ship4, ship5, ship6, ship7, ship8])
 //2.create game board as an array 3x3 for starters 
 
 class Gameboard {
@@ -59,8 +76,8 @@ class Gameboard {
 
     attackCoord(arr1, arr2) {
 
-        for (let j = 0; j < arr2.length; j++) {
-            let ship = arr2[j]
+        for (let j = 0; j < arr2.aliveShips.length; j++) {
+            let ship = arr2.aliveShips[j]
             let shipCoords = ship.coordinates
             shipCoords = shipCoords.flat(2)
 
@@ -70,7 +87,7 @@ class Gameboard {
                         shipCoords[i + 1] == arr1[1]) {
                         console.log('hit')
                         ship.hit()
-                        playerFleet.removeDestroyedShips()
+                        arr2.removeDestroyedShips()
                         return this.prevShot = true
                     }
                 }
@@ -135,7 +152,7 @@ function getCoordinates(index) {
 
 }
 
-function attackAtCoord(e, board) {
+function attackAtCoord(e, board, fleet) {
     let domElement = e
     if (domElement.srcElement.classList.contains('hit') ||
         domElement.srcElement.classList.contains('miss')) {
@@ -149,7 +166,7 @@ function attackAtCoord(e, board) {
 
 
 
-    board.attackCoord(coordinates, playerFleet.aliveShips)
+    board.attackCoord(coordinates, fleet)
     board.paintBoard(domElement)
 }
 
@@ -229,7 +246,7 @@ function playerPlacementModule() {
             console.log('Placement done')
             stopPlacement()
             battlePhase = true
-            attackEnabled(playerBoard)
+            attackEnabled(playerBoard, 'player-cells', playerFleet)
         }
         if (currShip < playerFleet.aliveShips.length - 1) {
             currShip++
@@ -340,16 +357,16 @@ function playerPlacementModule() {
     placeShipsOnBoard()
 }
 
-function attackEnabled(board) {
+function attackEnabled(board, domElement, fleet) {
     if (battlePhase = true) {
-        addEventListenerByClass('player-cells', 'click', function (e) {
-            attackAtCoord(e, board)
+        addEventListenerByClass(domElement, 'click', function (e) {
+            attackAtCoord(e, board, fleet)
         });
     }
 }
-function attackDisabled(board) {
-    removeEventListenerByClass('player-cells', 'click', function (e) {
-        attackAtCoord(e, board)
+function attackDisabled(board, domElement, fleet) {
+    removeEventListenerByClass(domElement, 'click', function (e) {
+        attackAtCoord(e, board, fleet)
     })
 }
 
@@ -357,6 +374,79 @@ function attackDisabled(board) {
 
 playerPlacementModule()
 
-//place computer ships randomly on comp board
+//create computer ships
+const computerShip1 = new Ship(4, 4, true, [[0, 0], [0, 0], [0, 0], [0, 0]])
+const computerShip2 = new Ship(3, 3, true, [[0, 0], [0, 0], [0, 0]])
+const computerShip3 = new Ship(3, 3, true, [[0, 0], [0, 0], [0, 0]])
+const computerShip4 = new Ship(2, 2, true, [[0, 0], [0, 0]])
+const computerShip5 = new Ship(2, 2, true, [[0, 0], [0, 0]])
+const computerShip6 = new Ship(2, 2, true, [[0, 0], [0, 0]])
+const computerShip7 = new Ship(1, 1, true, [[0, 0]])
+const computerShip8 = new Ship(1, 1, true, [[0, 0]])
+//place computer ships at random coords
+
+function placeComputerShips(fleet) {
+    fleet.aliveShips.forEach(ship => {
+        let randomX, randomY, randomDirection;
+
+        do {
+            randomX = Math.floor(Math.random() * 10) + 1;    // X 1 - 10 
+            randomY = Math.floor(Math.random() * 10) + 1;    // Y 1 - 10
+            randomDirection = Math.round(Math.random());     // 1 or 0
+
+            // Check if the ship can be placed at the randomly generated coordinates
+            if (randomDirection === 0) {  // Place ship horizontally
+                if (randomX + ship.length > 10) {
+                    continue;  // Skip this iteration and generate new random coordinates
+                }
+            } else {  // Place ship vertically
+                if (randomY + ship.length > 10) {
+                    continue;  // Skip this iteration and generate new random coordinates
+                }
+            }
+
+            // Check if any of the generated coordinates are already occupied by another ship
+            let overlap = false;
+            for (let i = 0; i < ship.length; i++) {
+                if (randomDirection === 0) {  // Check for overlap horizontally
+                    if (fleet.isOccupied(randomX + i, randomY)) {
+                        overlap = true;
+                        break;
+                    }
+                } else {  // Check for overlap vertically
+                    if (fleet.isOccupied(randomX, randomY + i)) {
+                        overlap = true;
+                        break;
+                    }
+                }
+            }
+
+            if (overlap) {
+                continue;  // Skip this iteration and generate new random coordinates
+            }
+
+            // Place the ship at the generated coordinates
+            if (randomDirection === 0) {  // Place ship horizontally
+                for (let i = 0; i < ship.length; i++) {
+                    ship.coordinates[i] = [randomX + i, randomY];
+                }
+            } else {  // Place ship vertically
+                for (let i = 0; i < ship.length; i++) {
+                    ship.coordinates[i] = [randomX, randomY + i];
+                }
+            }
+
+            break;  // Exit the loop once a valid placement is found
+
+        } while (true);  // Continue generating random coordinates until a valid placement is found
+    });
+}
+
+const computerFleet = new Fleet([
+    computerShip1, computerShip2, computerShip3, computerShip4,
+    computerShip5, computerShip6, computerShip7, computerShip8])
+placeComputerShips(computerFleet)
+const computerBoard = new Gameboard()
+attackEnabled(playerBoard, 'comp-cell', computerFleet)
 //create a turn based function calls
 //check computerFleet and playerFleet after every turn to check for winners
