@@ -3,6 +3,7 @@ class Game {
         this.players = players
         this.playerTurn = false
         this.placementPhase = true
+        this.gameState = true
         this.usedNumbers = []
     }
     playerPlacementModule() {
@@ -249,6 +250,10 @@ class Game {
     }
 
     computerAttack() {
+        game.checkForWinner()
+        if (!game.gameState) {
+            return
+        }
         console.log('computer attack called')
         if (this.placementPhase) {
             return
@@ -286,6 +291,16 @@ class Game {
 
 
     }
+    checkForWinner() {
+        if (player1.fleet.aliveShips.length == 0) {
+            console.log('Computer wins')
+            this.gameState = false
+        }
+        if (computerPlayer.fleet.aliveShips.length == 0) {
+            console.log('Player wins')
+            this.gameState = false
+        }
+    }
 }
 
 class Player {
@@ -295,6 +310,10 @@ class Player {
 
     }
     attackAtCoord(board, fleet) {
+        game.checkForWinner()
+        if (!game.gameState) {
+            return
+        }
         console.log('player attack called')
 
 
@@ -423,6 +442,7 @@ const ship5 = new Ship(2, 2, true, [[0, 0], [0, 0]])
 const ship6 = new Ship(2, 2, true, [[0, 0], [0, 0]])
 const ship7 = new Ship(1, 1, true, [[0, 0]])
 const ship8 = new Ship(1, 1, true, [[0, 0]])
+
 const playerFleet = new Fleet([
     ship1, ship2, ship3, ship4, ship5, ship6, ship7, ship8])
 
@@ -444,8 +464,12 @@ const computerFleet = new Fleet([
 
 const computerBoard = new Gameboard()
 
-let battlePhase = false
-let playerTurn = true
+const player1 = new Player(playerFleet, playerBoard)
+
+const computerPlayer = new Player(computerFleet, computerBoard)
+
+const game = new Game({ player1: player1, computer: computerPlayer })
+
 
 function addEventListenerByClass(className, event, fn, repaet = false) {
     var list = document.getElementsByClassName(className);
@@ -494,15 +518,13 @@ function convertCoordinatesToNumber(coordinates) {
     return tableInteger;
 }
 
-
-const player1 = new Player(playerFleet, playerBoard)
-
-const computerPlayer = new Player(computerFleet, computerBoard)
-
-const game = new Game({ player1: player1, computer: computerPlayer })
 game.placeComputerShips()
 game.playerPlacementModule()
 
 player1.attackAtCoord(computerPlayer.board, computerPlayer.fleet)
 game.computerAttack()
 
+//maybe add random placement for player ships
+//add reset button functionallity
+//make remaining ships text work
+//make game message work
