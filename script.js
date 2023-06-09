@@ -1,3 +1,16 @@
+class Game {
+    constructor(player) {
+        this.player = player
+    }
+}
+
+class Player {
+    constructor(fleet, board) {
+        this.fleet = fleet
+        this.board = board
+    }
+}
+
 class Ship {
     constructor(length, helth, alive, coordinates) {
         this.length = length
@@ -55,6 +68,7 @@ class Gameboard {
         });
     }
     attackCoord(arr1, arr2) {
+        console.log('attack cord')
         this.prevShot = false
         for (let j = 0; j < arr2.aliveShips.length; j++) {
             let ship = arr2.aliveShips[j]
@@ -70,6 +84,7 @@ class Gameboard {
                         ship.hit()
                         arr2.removeDestroyedShips()
                         return this.prevShot = true
+
                     }
                 }
             }
@@ -118,7 +133,7 @@ const computerBoard = new Gameboard()
 placeComputerShips(computerFleet)
 
 let battlePhase = false
-let currentTurn = 0
+let playerTurn = true
 
 function addEventListenerByClass(className, event, fn, repaet = false) {
     var list = document.getElementsByClassName(className);
@@ -167,12 +182,29 @@ function attackAtCoord(e, board, fleet) {
         domElement.classList.contains('miss')) {
         return
     }
+
+
     let gridNumber = parseInt(domElement.classList[0])
     let coordinates = getCoordinates(gridNumber)
 
     board.attackCoord(coordinates, fleet)
+
     board.paintBoard(domElement)
 
+    if (board.prevShot) {
+        playerTurn = true
+    } else {
+        playerTurn = false
+    }
+    if (!playerTurn) {
+        do {
+
+
+            computerAttack(playerBoard, playerFleet);
+
+        } while (!playerTurn)
+
+    }
 
 }
 
@@ -362,7 +394,10 @@ function attackEnabled(board, domElement, fleet) {
     if (battlePhase = true) {
         addEventListenerByClass(domElement, 'click', function (e) {
             attackAtCoord(e, board, fleet)
+            console.log(domElement)
+
         });
+
     }
 }
 function attackDisabled(board, domElement, fleet) {
@@ -370,8 +405,6 @@ function attackDisabled(board, domElement, fleet) {
         attackAtCoord(e, board, fleet)
     })
 }
-
-
 
 playerPlacementModule()
 
@@ -456,10 +489,14 @@ function computerAttack(board, fleet) {
 
     board.paintBoard(domElement)
 
+    if (board.prevShot) {
+        playerTurn = false
+    } else {
+        playerTurn = true
+    }
 }
 //attackEnabled(playerBoard, 'player-cells', playerFleet)
 //create a turn based function calls
 
 
-//computerAttack(playerBoard, playerFleet)
 //check computerFleet and playerFleet after every turn to check for winners
