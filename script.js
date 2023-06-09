@@ -1,6 +1,9 @@
 class Game {
     constructor(players) {
         this.players = players
+        this.playerTurn = false
+        this.placementPhase = true
+        this.usedNumbers = []
     }
     playerPlacementModule() {
 
@@ -81,8 +84,6 @@ class Game {
             if (currShip == playerFleet.aliveShips.length - 1) {
                 console.log('Placement done')
                 stopPlacement()
-                battlePhase = true
-
 
             }
             if (currShip < playerFleet.aliveShips.length - 1) {
@@ -179,6 +180,8 @@ class Game {
             addEventListenerByClass('player-cells', 'contextmenu', togglePlacement)
         }
         function stopPlacement() {
+            game.placementPhase = false
+            game.playerTurn = true
             removeEventListenerByClass('player-cells', 'mouseenter', displayPlacement)
             removeEventListenerByClass('player-cells', 'mouseleave', removeDisplayPlacement)
             removeEventListenerByClass('player-cells', 'click', placeShipAtCoord);
@@ -244,29 +247,22 @@ class Game {
             } while (true);  // Continue generating random coordinates until a valid placement is found
         });
     }
-    playerAttackEnabled() {
 
-        if (battlePhase = true) {
-
-
-        }
-    }
-    playerAttackDisabled(board, domElement, fleet) {
-        removeEventListenerByClass(domElement, 'click', function (e) {
-            attackAtCoord(e, board, fleet)
-        })
-    }
     computerAttack() {
-        console.log(player1)
+        console.log('computer attack called')
+        if (this.placementPhase) {
+            return
+        }
+
         function generateUniqueNumber() {
-            let usedNumbers = []
+
             let randomNumber;
 
             do {
                 randomNumber = Math.floor(Math.random() * 100) + 1;
-            } while (usedNumbers.includes(randomNumber));
+            } while (game.usedNumbers.includes(randomNumber));
 
-            usedNumbers.push(randomNumber);
+            game.usedNumbers.push(randomNumber);
             return randomNumber;
         }
 
@@ -274,10 +270,16 @@ class Game {
         let coordinates = getCoordinates(gridNumber)
 
         const domElement = document.querySelector(`[data-cell='${gridNumber}']`)
-        console.log(domElement)
 
         console.log(coordinates)
-        player1.board.attackCoord(coordinates, player1.fleet)
+        if (player1.board.attackCoord(coordinates, player1.fleet)) {
+            player1.board.paintBoard(domElement)
+            game.playerTurn = false
+            game.computerAttack()
+        } else {
+            game.playerTurn = true
+            player1.attackAtCoord(computerPlayer.board, computerPlayer.fleet)
+        }
 
         player1.board.paintBoard(domElement)
 
@@ -290,25 +292,36 @@ class Player {
     constructor(fleet, board) {
         this.fleet = fleet
         this.board = board
-        let playerTurn = false
+
     }
     attackAtCoord(board, fleet) {
+        console.log('player attack called')
+
 
         const playerCells = document.querySelectorAll('.comp-cell')
         playerCells.forEach(cell => {
             cell.addEventListener('click', (e) => {
-                console.log(parseInt(e.target.classList[0]))
+                if (!game.playerTurn) {
+                    return
+                }
+
                 let coordinates = getCoordinates(parseInt(e.target.classList[0]))
-                console.log(coordinates)
+
                 if (e.target.classList.contains('hit') ||
                     e.target.classList.contains('miss')) {
                     return
                 }
 
-                board.attackCoord(coordinates, fleet)
+                if (board.attackCoord(coordinates, fleet)) {
+                    game.playerTurn = true
+                    player1.attackAtCoord(computerPlayer.board, computerPlayer.fleet)
+                } else {
+                    game.playerTurn = false
+                    game.computerAttack()
+                }
                 board.paintBoard(e.target)
 
-            })
+            }, { once: true })
         });
     }
 }
@@ -380,7 +393,7 @@ class Gameboard {
                 if (i % 2 == 0) {
                     if (shipCoords[i] == arr1[0] &&
                         shipCoords[i + 1] == arr1[1]) {
-                        console.log('hit')
+
 
                         ship.hit()
                         arr2.removeDestroyedShips()
@@ -482,27 +495,6 @@ function convertCoordinatesToNumber(coordinates) {
 }
 
 
-//dom related as it takes event element
-function attackAtCoord(board, fleet) {
-
-    const playerCells = document.querySelectorAll('.player-cells')
-    playerCells.forEach(cell => {
-        cell.addEventListener('click', (e) => {
-            console.log(e.target.classList[0])
-            let coordinates = getCoordinates(e.target.classList[0])
-
-            if (domElement.classList.contains('hit') ||
-                domElement.classList.contains('miss')) {
-                return
-            }
-            console.log(coordinates)
-            board.attackCoord(coordinates, fleet)
-            board.paintBoard(domElement)
-
-        })
-    });
-}
-
 const player1 = new Player(playerFleet, playerBoard)
 
 const computerPlayer = new Player(computerFleet, computerBoard)
@@ -510,12 +502,7 @@ const computerPlayer = new Player(computerFleet, computerBoard)
 const game = new Game({ player1: player1, computer: computerPlayer })
 game.placeComputerShips()
 game.playerPlacementModule()
-game.playerAttackEnabled()
-//place computer ships at random coords
 
-//attack the player board
+player1.attackAtCoord(computerPlayer.board, computerPlayer.fleet)
+game.computerAttack()
 
-//create a turn based function calls
-
-
-//check computerFleet and playerFleet after every turn to check for winners
