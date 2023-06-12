@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+
     <title>Document</title>
     <script src="./script.js" defer></script>
 
@@ -21,7 +22,7 @@
     </header>
 
     <div class="game-message">
-        <h2>Game message goes here!</h2>
+        <h2 class="message-text">Game message goes here!</h2>
     </div>
     <div class="game-container">
 
@@ -134,8 +135,7 @@
                 </div>
             </div>
             <div class="button-container">
-                <button class="place-ships">Place Ships</button>
-                <button class="reset-ships">Reset Ships</button>
+                <div class="remaining-ships player-ships">8 Ships remain</div>
             </div>
 
         </div>
@@ -143,7 +143,7 @@
             <div class="player-title">
                 Computer
             </div>
-            <div class="player">
+            <div class="player ">
                 <div class="1 comp-cell cells" data-compcell="1"></div>
                 <div class="2 comp-cell cells" data-compcell="2"></div>
                 <div class="3 comp-cell cells" data-compcell="3"></div>
@@ -245,7 +245,7 @@
                 <div class="99 comp-cell cells" data-compcell="99"></div>
                 <div class="100 comp-cell cells" data-compcell="100"></div>
             </div>
-            <div class="remaining-ships">5 Ships remain</div>
+            <div class="remaining-ships computer-ships">8 Ships remain</div>
         </div>
     </div>
 

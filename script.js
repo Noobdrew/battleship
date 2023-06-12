@@ -5,9 +5,11 @@ class Game {
         this.placementPhase = true
         this.gameState = true
         this.usedNumbers = []
+        this.turn = 0
     }
     playerPlacementModule() {
 
+        messageText.textContent = 'Place your ships, you can rotate them with right click.'
         const playerCells = document.querySelectorAll('.player-cells')
 
         playerCells.forEach(cell => {
@@ -84,6 +86,7 @@ class Game {
             //if all ships places end placement phase
             if (currShip == playerFleet.aliveShips.length - 1) {
                 console.log('Placement done')
+                messageText.textContent = 'Battle started. Select attack coortinates.'
                 stopPlacement()
 
             }
@@ -179,6 +182,7 @@ class Game {
             addEventListenerByClass('player-cells', 'mouseleave', removeDisplayPlacement)
             addEventListenerByClass('player-cells', 'click', placeShipAtCoord);
             addEventListenerByClass('player-cells', 'contextmenu', togglePlacement)
+
         }
         function stopPlacement() {
             game.placementPhase = false
@@ -259,6 +263,7 @@ class Game {
             return
         }
 
+
         function generateUniqueNumber() {
 
             let randomNumber;
@@ -280,9 +285,14 @@ class Game {
         if (player1.board.attackCoord(coordinates, player1.fleet)) {
             player1.board.paintBoard(domElement)
             game.playerTurn = false
+            messageText.textContent += 'hits, '
             game.computerAttack()
         } else {
             game.playerTurn = true
+            messageText.textContent += 'and missed.'
+            setTimeout(() => {
+                messageText.textContent = 'Its your turn select a suqre.'
+            }, 3000);
             player1.attackAtCoord(computerPlayer.board, computerPlayer.fleet)
         }
 
@@ -290,18 +300,37 @@ class Game {
 
 
 
+
+
     }
     checkForWinner() {
+        let winner = ''
         if (player1.fleet.aliveShips.length == 0) {
             console.log('Computer wins')
+            winner = 'Computer wins'
+            messageText.textContent = 'Computer wins'
+            setTimeout(() => {
+                messageText.textContent = 'Player wins'
+            }, 3000);
             this.gameState = false
         }
         if (computerPlayer.fleet.aliveShips.length == 0) {
             console.log('Player wins')
+            winner = 'Player wins'
+            messageText.textContent = 'Player wins'
+            setTimeout(() => {
+                messageText.textContent = 'Player wins'
+            }, 3000);
+
+
             this.gameState = false
         }
+
     }
+
 }
+
+
 
 class Player {
     constructor(fleet, board) {
@@ -310,6 +339,7 @@ class Player {
 
     }
     attackAtCoord(board, fleet) {
+
         game.checkForWinner()
         if (!game.gameState) {
             return
@@ -324,6 +354,7 @@ class Player {
                     return
                 }
 
+                game.turn++
                 let coordinates = getCoordinates(parseInt(e.target.classList[0]))
 
                 if (e.target.classList.contains('hit') ||
@@ -333,9 +364,14 @@ class Player {
 
                 if (board.attackCoord(coordinates, fleet)) {
                     game.playerTurn = true
+
+                    messageText.textContent = 'You hit a ship, you can attack again.'
+
+
                     player1.attackAtCoord(computerPlayer.board, computerPlayer.fleet)
                 } else {
                     game.playerTurn = false
+                    messageText.textContent = ' The computer shoots '
                     game.computerAttack()
                 }
                 board.paintBoard(e.target)
@@ -369,14 +405,17 @@ class Ship {
     }
 }
 class Fleet {
-    constructor(aliveShips) {
+    constructor(aliveShips, domElement) {
         this.aliveShips = aliveShips
         this.destroyedShips = []
+        this.domElement = document.querySelector(domElement)
     }
     removeDestroyedShips() {
         this.aliveShips.forEach((ship, index) => {
             if (ship.helth <= 0) {
                 this.destroyedShips.push(this.aliveShips.splice(index, 1))
+
+                this.domElement.textContent = `${this.aliveShips.length} Ships remain`
             }
         });
     }
@@ -433,6 +472,8 @@ class Gameboard {
         }
     }
 }
+
+let messageText = document.querySelector('.message-text')
 //player definitions
 const ship1 = new Ship(4, 4, true, [[0, 0], [0, 0], [0, 0], [0, 0]])
 const ship2 = new Ship(3, 3, true, [[0, 0], [0, 0], [0, 0]])
@@ -444,7 +485,7 @@ const ship7 = new Ship(1, 1, true, [[0, 0]])
 const ship8 = new Ship(1, 1, true, [[0, 0]])
 
 const playerFleet = new Fleet([
-    ship1, ship2, ship3, ship4, ship5, ship6, ship7, ship8])
+    ship1, ship2, ship3, ship4, ship5, ship6, ship7, ship8], '.player-ships')
 
 const playerBoard = new Gameboard()
 
@@ -460,7 +501,7 @@ const computerShip8 = new Ship(1, 1, true, [[0, 0]])
 
 const computerFleet = new Fleet([
     computerShip1, computerShip2, computerShip3, computerShip4,
-    computerShip5, computerShip6, computerShip7, computerShip8])
+    computerShip5, computerShip6, computerShip7, computerShip8], '.computer-ships')
 
 const computerBoard = new Gameboard()
 
@@ -518,13 +559,11 @@ function convertCoordinatesToNumber(coordinates) {
     return tableInteger;
 }
 
+
 game.placeComputerShips()
 game.playerPlacementModule()
 
 player1.attackAtCoord(computerPlayer.board, computerPlayer.fleet)
 game.computerAttack()
 
-//maybe add random placement for player ships
-//add reset button functionallity
-//make remaining ships text work
-//make game message work
+
